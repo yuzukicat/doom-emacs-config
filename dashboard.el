@@ -22,30 +22,6 @@
 (add-hook! '+doom-dashboard-mode-hook (hide-mode-line-mode 1)
       (hl-line-mode 1))
 
-(defun ginshio/doom-init-ui-misc()
-  (menu-bar-mode -1)               ;; disable menu-bar
-  (setq-default cursor-type 'box)  ;; set box style cursor
-  (blink-cursor-mode -1)           ;; cursor not blink
-  ;;<<doom-dashboard-layout>>
-  (if (display-graphic-p)
-      (progn
-	;; NOTE: ONLY GUI
-	;; set font
-	(dolist (charset '(kana han symbol cjk-misc bopomofo gb18030))
-          (set-fontset-font (frame-parameter nil 'font) charset
-                            (font-spec :family "Source Han Mono")))
-	(appendq! face-font-rescale-alist
-                  '(("Source Han Mono" . 1.2)
-                    ))
-	;;<<doom-image-banner>>
-	;; random banner image from bing.com, NOTE: https://emacs-china.org/t/topic/264/33
-	)
-    (progn
-      ;; NOTE: ONLY TUI
-      ;;<<doom-ascii-banner>>
-      )))
-(add-hook! 'doom-init-ui-hook #'ginshio/doom-init-ui-misc)
-
 (defun my/dashboard-draw-ascii-banner-fn ()
   (let* ((banner
           '("██╗░░░░░███████╗███╗░░░███╗░█████╗░███╗░░██╗"
@@ -70,3 +46,15 @@
      'face 'doom-dashboard-banner)))
 
 (setq +doom-dashboard-ascii-banner-fn #'my/dashboard-draw-ascii-banner-fn)
+
+(when (featurep! :app telegram)
+  (setq +doom-dashboard-menu-sections
+        `(("Telegram: Keyboard War"
+           :icon (all-the-icons-faicon "paper-plane" :face 'doom-dashboard-menu-title)
+           :action telega)
+          ,@+doom-dashboard-menu-sections)))
+
+(advice-remove '+doom-dashboard/open "delete-other-windows")
+(advice-add '+doom-dashboard/open :before
+            (lambda (&rest _) (delete-other-windows))
+            '((name . "delete-other-windows")))
